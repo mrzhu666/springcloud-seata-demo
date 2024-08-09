@@ -1,0 +1,43 @@
+version: "3.1"
+
+services:
+
+  seata-server:
+    image: seataio/seata-server:latest
+    container_name: springcloud-seata-server
+    hostname: seata-server
+    ports:
+      - "8091:8091"
+      - "7091:7091"
+    environment:
+      - SEATA_PORT=8091
+      - SEATA_CONFIG_NAME=file:/root/seata-config/registry
+    volumes:
+      - ./seata-config:/root/seata-config
+    expose:
+      - 8091
+      - 7091
+    networks:
+      - springcloud-seata # 指定网络
+  mysql:
+    image: mysql:5.7.43
+    container_name: springcloud-seata-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456 # root 用户密码
+    ports:
+      - "3306:3306" # 端口映射
+    expose:
+      - 3306  # 暴露给其它容器访问
+    volumes:
+      - ~/springcloud-seata-demo/mysql-data:/var/lib/mysql
+      - ./mysql-init/init:/docker-entrypoint-initdb.d # 自动执行启动脚本
+      - ./mysql-init/sql:/opt/sql  # 初始化数据
+      - ./mysql-init/backup:/opt/backup  # 数据备份目录
+    #    restart: always # 崩溃后自动重启
+    networks:
+      - springcloud-seata # 指定网络
+
+
+networks:
+  springcloud-seata: # 自定义网络，实现网络互通和隔离
+
